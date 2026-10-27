@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Zession — Dashboard</title>
+  <style>
+    /* ═══════════ RESET & THEME ═══════════ */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-main: #020817;
+      --bg-card: rgba(15, 23, 42, 0.65);
+      --bg-card-hover: rgba(30, 64, 175, 0.45);
+      --border-color: rgba(96, 165, 250, 0.25);
+      --text-main: #f0f9ff;
+      --text-muted: rgba(191, 219, 254, 0.7);
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-grad: linear-gradient(135deg, #60a5fa, #3b82f6);
+      --success: #86efac;
+      --danger: #fca5a5;
+      --owner-grad: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+
+    [data-theme="light"] {
+      --bg-main: #e0f2fe;
+      --bg-card: rgba(255, 255, 255, 0.85);
+      --bg-card-hover: rgba(219, 234, 254, 0.95);
+      --border-color: rgba(59, 130, 246, 0.25);
+      --text-main: #0f172a;
+      --text-muted: rgba(15, 23, 42, 0.7);
+    }
+
+    html, body {
+      min-height: 100vh; width: 100%;
+      overflow-x: hidden;
+      touch-action: pan-y;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body {
+      position: relative;
+      -webkit-user-select: none;
+      user-select: none;
+      isolation: isolate;
+    }
+
+    /* ═══════════ BACKGROUND ═══════════ */
+    .bg-image {
+      position: fixed; inset: 0;
+      background: url('background.png') no-repeat center center;
+      background-size: cover;
+      z-index: 0;
+    }
+
+    .bg-overlay {
+      position: fixed; inset: 0;
+      background: radial-gradient(circle at 50% -20%, rgba(20, 60, 140, 0.7), rgba(2, 8, 23, 0.95));
+      z-index: 1;
+      pointer-events: none;
+      transition: background 0.3s;
+    }
+
+    [data-theme="light"] .bg-overlay {
+      background: radial-gradient(circle at 50% -20%, rgba(191, 219, 254, 0.7), rgba(224, 242, 254, 0.95));
+    }
+
+    /* ═══════════ TOPBAR ═══════════ */
+    .topbar {
+      position: sticky; top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1.2rem;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    [data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.6); }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .brand-logo {
+      width: 42px; height: 42px;
+      padding: 2px;
+      border-radius: 13px;
+      background: var(--accent-grad);
+      box-shadow: 0 6px 16px -6px rgba(59, 130, 246, 0.7);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .brand-logo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      border-radius: 11px;
+      display: block;
+    }
+
+    .brand-name {
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+
+    .brand-name span {
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hamburger {
+      width: 42px; height: 42px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      outline: none;
+    }
+
+    .hamburger:hover { background: var(--bg-card-hover); }
+    .hamburger:active { transform: scale(0.95); }
+
+    .hamburger span {
+      display: block;
+      width: 20px; height: 2px;
+      background: var(--text-main);
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+
+    .hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.active span:nth-child(2) { opacity: 0; }
+    .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* ═══════════ MAIN CONTENT ═══════════ */
+    .content {
+      position: relative;
+      z-index: 10;
+      padding: 2rem 1.2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* HERO WELCOME */
+    .welcome-hero {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: slideDown 0.6s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, #ffffff, #93c5fd);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    [data-theme="light"] .welcome-hero h1 {
+      background: linear-gradient(to right, #0f172a, #2563eb);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+
+    .welcome-hero p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* OWNER BADGE */
+    .owner-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      background: var(--owner-grad);
+      color: #000;
+      font-size: 0.75rem;
+      font-weight: 800;
+      border-radius: 99px;
+      margin-top: 0.8rem;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+    
+    .owner-badge svg { width: 14px; height: 14px; stroke: #000; stroke-width: 2.5; }
+
+    /* ═══════════ TOOLS GRID ═══════════ */
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin: 2rem 0 1rem 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .section-title svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+
+    .tool-card {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 1.2rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 1.2rem;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-main);
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      outline: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .tool-card:hover {
+      transform: translateY(-4px);
+      background: var(--bg-card-hover);
+      border-color: var(--accent);
+      box-shadow: 0 10px 25px -10px rgba(59, 130, 246, 0.5);
+    }
+
+    .tool-card:hover::before { opacity: 1; }
+
+    .tool-icon {
+      width: 46px; height: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.15);
+      border-radius: 14px;
+      color: var(--accent-light);
+      transition: transform 0.3s;
+    }
+
+    .tool-card:hover .tool-icon { transform: scale(1.1) rotate(-5deg); }
+
+    .tool-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .tool-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: -0.2px;
+    }
+
+    .tool-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ═══════════ FOOTER ═══════════ */
+    .footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ═══════════ SIDEBAR TOOLS MENU ═══════════ */
+    .sidebar-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 98;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .sidebar {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 290px;
+      max-width: 85vw;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(25px) saturate(180%);
+      -webkit-backdrop-filter: blur(25px) saturate(180%);
+      border-left: 1px solid var(--border-color);
+      z-index: 99;
+      transform: translateX(105%);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    [data-theme="light"] .sidebar { background: rgba(255, 255, 255, 0.85); }
+
+    .sidebar.show { transform: translateX(0); }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sidebar-header img {
+      width: 46px; height: 46px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 2px solid var(--accent);
+    }
+
+    .sidebar-title { font-weight: 800; font-size: 1.1rem; letter-spacing: -0.3px; }
+    .sidebar-user { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
+
+    .sidebar-nav { padding: 1rem 0.8rem; flex: 1; overflow-y: auto; }
+
+    .menu-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 0.8rem;
+      padding-left: 0.5rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      padding: 0.8rem;
+      background: transparent;
+      border: none;
+      border-radius: 0.8rem;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      outline: none;
+      margin-bottom: 0.3rem;
+    }
+
+    .menu-item:hover { background: var(--bg-card-hover); color: var(--accent-light); padding-left: 1rem; }
+    .menu-item.danger { color: var(--danger); }
+    .menu-item.danger:hover { background: rgba(248, 113, 113, 0.15); }
+
+    .menu-icon { display: flex; align-items: center; justify-content: center; width: 20px; color: inherit; }
+    .menu-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* ═══════════ MODAL ═══════════ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+    .modal {
+      width: 100%;
+      max-width: 440px;
+      max-height: 85vh;
+      background: var(--bg-card);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--border-color);
+      border-radius: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      transform: translateY(30px) scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      overflow: hidden;
+      box-shadow: 0 20px 40px -10px rgba(0,0,0,0.6);
+    }
+
+    .modal-overlay.show .modal { transform: translateY(0) scale(1); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h3 { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.3px; }
+
+    .modal-close {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .modal-close:hover { background: rgba(255,255,255,0.1); color: var(--text-main); transform: rotate(90deg); }
+
+    .modal-body {
+      padding: 1.2rem;
+      overflow-y: auto;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    .modal-body h4 { color: var(--text-main); margin: 1rem 0 0.5rem; font-size: 0.95rem; font-weight: 700; }
+    .modal-body p { margin-bottom: 0.8rem; }
+    .modal-body strong { color: var(--text-main); }
+
+    /* Inputs & Buttons */
+    .input-group { margin-bottom: 1.2rem; }
+
+    .input-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-group input, .input-group textarea, .input-group select {
+      width: 100%;
+      padding: 0.9rem;
+      background: rgba(0, 0, 0, 0.2);
+      border: 1.5px solid var(--border-color);
+      border-radius: 0.8rem;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    [data-theme="light"] .input-group input,
+    [data-theme="light"] .input-group textarea,
+    [data-theme="light"] .input-group select {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .input-group input:focus, .input-group textarea:focus {
+      border-color: var(--accent-light);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.95rem;
+      background: var(--accent-grad);
+      color: white;
+      border: none;
+      border-radius: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      outline: none;
+      transition: filter 0.2s, transform 0.2s;
+      box-shadow: 0 8px 20px -8px rgba(59, 130, 246, 0.6);
+    }
+
+    .btn-primary:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 0.9rem;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1.5px solid var(--border-color);
+      border-radius: 0.8rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.6rem;
+      outline: none;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
+
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 8px 20px -8px rgba(220, 38, 38, 0.6); }
+
+    .feedback { font-size: 0.8rem; margin-top: 0.8rem; text-align: center; color: var(--danger); font-weight: 600; }
+    .feedback.success { color: var(--success); }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      font-size: 0.9rem;
+      gap: 0.5rem;
+    }
+    .data-row:last-child { border-bottom: none; }
+    .data-row .label { color: var(--text-muted); }
+    .data-row .value { color: var(--text-main); font-weight: 600; text-align: right; word-break: break-word; }
+
+    /* ═══════════ TOAST ═══════════ */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.9rem 1.5rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 1000;
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast svg { width: 18px; height: 18px; stroke: var(--accent); fill: none; stroke-width: 2.5; }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .content { padding: 1.5rem 1rem; }
+      .welcome-hero h1 { font-size: 1.6rem; }
+      .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+      .tool-card { padding: 1rem 0.8rem; }
+      .tool-title { font-size: 0.85rem; }
+      .tool-icon { width: 40px; height: 40px; border-radius: 10px; }
+      .tool-icon svg { width: 20px; height: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">
+        <img src="logo.png" alt="Zession" draggable="false" />
+      </div>
+      <div class="brand-name">Zes<span>sion</span></div>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Buka menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main class="content">
+    <!-- HERO SECTION -->
+    <section class="welcome-hero">
+      <h1>Selamat datang di Zession</h1>
+      <p>Halo <strong id="welcomeName">User</strong>, apa yang ingin kamu kerjakan hari ini?</p>
+      <div id="ownerTagContainer"></div>
+    </section>
+
+    <!-- TOOLS SECTION -->
+    <h2 class="section-title">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      24 Tools Bermanfaat
+    </h2>
+    <div class="tools-grid" id="toolsGrid"></div>
+  </main>
+
+  <footer class="footer">
+    © 2026 Zession. Hak Cipta Dilindungi.
+  </footer>
+
+  <!-- Sidebar -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="logo.png" alt="Zession" />
+      <div>
+        <div class="sidebar-title">Zession</div>
+        <div class="sidebar-user" id="sidebarUser">User</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Diisi via JavaScript -->
+    </nav>
+  </aside>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Judul</h3>
+        <button class="modal-close" id="modalClose" aria-label="Tutup">×</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    <span id="toastMsg">Pesan</span>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ═══════════ KONFIGURASI & SESSION ═══════════ */
+      const SESSION_KEY  = 'zession_current_user';
+      const ACCOUNTS_KEY = 'zession_accounts';
+      const INTRO_PREFIX = 'zession_intro_';
+      const HISTORY_KEY  = 'zession_history_';
+      const THEME_KEY    = 'zession_theme';
+      const OWNER_NAME   = 'ZarReal';
+      const OWNER_EMAIL  = 'zession.id@gmail.com';
+
+      const currentUser = (() => {
+        try { return sessionStorage.getItem(SESSION_KEY); }
+        catch (_) { return null; }
+      })();
+
+      if (!currentUser) { window.location.replace('index.html'); return; }
+
+      const isOwner = currentUser.toLowerCase() === OWNER_NAME.toLowerCase();
+
+      // Handle jika owner belum punya data intro (bypass)
+      const getIntro = () => {
+        try { return JSON.parse(localStorage.getItem(INTRO_PREFIX + currentUser.toLowerCase())); }
+        catch (_) { return null; }
+      };
+
+      let intro = getIntro();
+      if (!intro || !intro.submitted) {
+        if (isOwner) {
+          // Buatkan data intro dummy untuk owner
+          intro = { roblox: 'ZarRealDev', nama: 'Zar', kota: 'Jakarta', game: 'Blox Fruits', submitted: true };
+          localStorage.setItem(INTRO_PREFIX + currentUser.toLowerCase(), JSON.stringify(intro));
+        } else {
+          window.location.replace('intro.html'); return;
+        }
+      }
+
+      /* ═══════════ STORAGE & UTILS ═══════════ */
+      const getAccounts = () => {
+        try { return JSON.parse(localStorage.getItem(ACCOUNTS_KEY)) || {}; }
+        catch (_) { return {}; }
+      };
+      const saveAccounts = (a) => {
+        try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(a)); } catch (_) {}
+      };
+      const getAccount = () => getAccounts()[currentUser.toLowerCase()] || null;
+
+      const getHistory = () => {
+        try { return JSON.parse(localStorage.getItem(HISTORY_KEY + currentUser.toLowerCase())) || []; }
+        catch (_) { return []; }
+      };
+      const addHistory = (action) => {
+        const h = getHistory();
+        h.unshift({ action, time: new Date().toISOString() });
+        if (h.length > 50) h.length = 50;
+        try { localStorage.setItem(HISTORY_KEY + currentUser.toLowerCase(), JSON.stringify(h)); } catch (_) {}
+      };
+
+      const esc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+      /* ═══════════ THEME ═══════════ */
+      const applyTheme = (t) => {
+        document.documentElement.setAttribute('data-theme', t);
+        try { localStorage.setItem(THEME_KEY, t); } catch (_) {}
+      };
+      let currentTheme = (() => {
+        try { return localStorage.getItem(THEME_KEY) || 'dark'; }
+        catch (_) { return 'dark'; }
+      })();
+      applyTheme(currentTheme);
+
+      /* ═══════════ TOAST ═══════════ */
+      const toastEl = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      let toastTimer;
+      const showToast = (msg) => {
+        toastMsg.textContent = msg;
+        toastEl.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3000);
+      };
+
+      /* ═══════════ ICONS (SVG MURNI) ═══════════ */
+      const SVG = {
+        copy: '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>',
+        key: '<svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>',
+        qr: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+        hash: '<svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+        binary: '<svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+        clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        database: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>',
+        dice: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg>',
+        user: '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        edit: '<svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
+        file: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+        gift: '<svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>',
+        check: '<svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+        shield: '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+        moon: '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>',
+        sun: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
+        info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+        logout: '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+        settings: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+        mail: '<svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+        tools: '<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+        image: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+        link: '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+        refresh: '<svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+        download: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        upload: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+        search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+        trash: '<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+        star: '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+        activity: '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+        globe: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>'
+      };
+
+      /* ═══════════ 24 DATA TOOLS ═══════════ */
+      const TOOLS = [
+        { id: 'copytext', icon: SVG.copy, title: 'Salin Teks', desc: 'Salin teks ke clipboard' },
+        { id: 'passgen', icon: SVG.key, title: 'Generator Sandi', desc: 'Buat sandi acak aman' },
+        { id: 'qrgen', icon: SVG.qr, title: 'Generator QR', desc: 'Buat QR dari teks/link' },
+        { id: 'hashtag', icon: SVG.hash, title: 'Bersihkan Teks', desc: 'Hapus spasi/karakter aneh' },
+        { id: 'base64', icon: SVG.binary, title: 'Base64', desc: 'Encode / decode Base64' },
+        { id: 'timer', icon: SVG.clock, title: 'Timer', desc: 'Hitung mundur waktu' },
+        { id: 'notes', icon: SVG.database, title: 'Catatan Lokal', desc: 'Simpan catatan di browser' },
+        { id: 'dice', icon: SVG.dice, title: 'Dadu Acak', desc: 'Lempar dadu virtual' },
+        { id: 'profil', icon: SVG.user, title: 'Profil Saya', desc: 'Lihat data intro & akun' },
+        { id: 'gantipass', icon: SVG.edit, title: 'Ganti Password', desc: 'Ubah password akun' },
+        { id: 'jsonview', icon: SVG.file, title: 'Lihat JSON', desc: 'Lihat data backup akun' },
+        { id: 'rewards', icon: SVG.gift, title: 'Klaim Harian', desc: 'Klaim hadiah harian' },
+        { id: 'tasks', icon: SVG.check, title: 'Tugas Harian', desc: 'Checklist aktivitas' },
+        { id: 'privacy', icon: SVG.shield, title: 'Privasi', desc: 'Cek status data lokal' },
+        { id: 'theme', icon: SVG.moon, title: 'Tema', desc: 'Ganti gelap / terang' },
+        { id: 'colorpicker', icon: SVG.image, title: 'Warna Acak', desc: 'Dapatkan kode warna acak' },
+        { id: 'urlencode', icon: SVG.link, title: 'URL Encoder', desc: 'Encode URL agar aman' },
+        { id: 'wordcount', icon: SVG.search, title: 'Hitung Kata', desc: 'Hitung kata & karakter' },
+        { id: 'stopwatch', icon: SVG.activity, title: 'Stopwatch', desc: 'Ukur waktu presisi' },
+        { id: 'calc', icon: SVG.hash, title: 'Kalkulator', desc: 'Hitung matematika dasar' },
+        { id: 'ipcheck', icon: SVG.globe, title: 'Cek IP', desc: 'Lihat info IP publikmu' },
+        { id: 'charcount', icon: SVG.file, title: 'Hitung Karakter', desc: 'Cek jumlah karakter teks' },
+        { id: 'cleardata', icon: SVG.trash, title: 'Hapus Sesi', desc: 'Hapus data aktivitas lokal' },
+        { id: 'support', icon: SVG.star, title: 'Beri Rating', desc: 'Dukung pengembangan Zession' }
+      ];
+
+      /* ═══════════ MENU GARIS TIGA (TOOLS) ═══════════ */
+      const SIDEBAR_MENU = [
+        { isLabel: true, text: 'TOOLS' },
+        { id: 'settings', icon: SVG.settings, title: 'Pengaturan' },
+        { id: 'about', icon: SVG.info, title: 'Tentang' },
+        { id: 'info', icon: SVG.mail, title: 'Informasi' },
+        { id: 'logout', icon: SVG.logout, title: 'Keluar', danger: true }
+      ];
+
+      /* ═══════════ RENDER UI ═══════════ */
+      const toolsGrid = document.getElementById('toolsGrid');
+      const sidebarNav = document.getElementById('sidebarNav');
+
+      // Render Owner Badge
+      if (isOwner) {
+        document.getElementById('ownerTagContainer').innerHTML = `
+          <div class="owner-badge">
+            ${SVG.star} OWNER ZESSION
+          </div>
+        `;
+        // Ubah warna brand
+        document.querySelector('.brand-logo').style.background = 'var(--owner-grad)';
+      }
+
+      // Render Tools
+      TOOLS.forEach(tool => {
+        const btn = document.createElement('button');
+        btn.className = 'tool-card';
+        btn.innerHTML = `
+          <div class="tool-icon">${tool.icon}</div>
+          <div class="tool-title">${tool.title}</div>
+          <div class="tool-desc">${tool.desc}</div>
+        `;
+        btn.onclick = () => openTool(tool.id);
+        toolsGrid.appendChild(btn);
+      });
+
+      // Render Sidebar
+      SIDEBAR_MENU.forEach(item => {
+        if (item.isLabel) {
+          const lbl = document.createElement('div');
+          lbl.className = 'menu-label';
+          lbl.textContent = item.text;
+          sidebarNav.appendChild(lbl);
+          return;
+        }
+        const btn = document.createElement('button');
+        btn.className = 'menu-item' + (item.danger ? ' danger' : '');
+        btn.innerHTML = `<div class="menu-icon">${item.icon}</div> <span>${item.title}</span>`;
+        btn.onclick = () => { closeSidebar(); setTimeout(() => openMenu(item.id), 200); };
+        sidebarNav.appendChild(btn);
+      });
+
+      /* ═══════════ SIDEBAR TOGGLE ═══════════ */
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const hamburger = document.getElementById('hamburger');
+
+      const openSidebar = () => { sidebar.classList.add('show'); sidebarOverlay.classList.add('show'); hamburger.classList.add('active'); };
+      const closeSidebar = () => { sidebar.classList.remove('show'); sidebarOverlay.classList.remove('show'); hamburger.classList.remove('active'); };
+
+      hamburger.onclick = () => sidebar.classList.contains('show') ? closeSidebar() : openSidebar();
+      sidebarOverlay.onclick = closeSidebar;
+
+      /* ═══════════ MODAL ═══════════ */
+      const modalOverlay = document.getElementById('modalOverlay');
+      const modalTitle   = document.getElementById('modalTitle');
+      const modalBody    = document.getElementById('modalBody');
+      const modalClose   = document.getElementById('modalClose');
+
+      const openModal = (title, html) => {
+        modalTitle.textContent = title;
+        modalBody.innerHTML = html;
+        modalOverlay.classList.add('show');
+      };
+      const closeModal = () => modalOverlay.classList.remove('show');
+
+      modalClose.onclick = closeModal;
+      modalOverlay.onclick = (e) => { if (e.target === modalOverlay) closeModal(); };
+
+      /* ═══════════ FUNGSI TOOLS ═══════════ */
+      function openTool(id) {
+        switch (id) {
+          case 'copytext':
+            openModal('Salin Teks', `
+              <div class="input-group">
+                <label>Teks yang ingin disalin</label>
+                <textarea id="copyInput" rows="4" placeholder="Ketik atau tempel teks di sini..."></textarea>
+              </div>
+              <button class="btn-primary" id="copyBtn">Salin ke Clipboard</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('copyBtn').onclick = () => {
+                const txt = document.getElementById('copyInput').value;
+                if (!txt) return showToast('Teks kosong!');
+                navigator.clipboard.writeText(txt).then(() => showToast('Teks berhasil disalin!'));
+              };
+            }, 50);
+            break;
+
+          case 'passgen':
+            openModal('Generator Sandi', `
+              <div class="input-group">
+                <label>Panjang Sandi (6-64)</label>
+                <input type="number" id="passLen" value="16" min="6" max="64">
+              </div>
+              <div class="input-group">
+                <label>Hasil Sandi</label>
+                <input type="text" id="passResult" readonly style="font-family:monospace; letter-spacing:1px;">
+              </div>
+              <button class="btn-primary" id="genBtn">Generate Sandi Baru</button>
+              <button class="btn-secondary" id="copyPassBtn">Salin Sandi</button>
+            `);
+            setTimeout(() => {
+              const genPass = () => {
+                const len = parseInt(document.getElementById('passLen').value) || 16;
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+';
+                let res = '';
+                for (let i = 0; i < len; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
+                document.getElementById('passResult').value = res;
+              };
+              document.getElementById('genBtn').onclick = genPass;
+              document.getElementById('copyPassBtn').onclick = () => {
+                const val = document.getElementById('passResult').value;
+                if (val) navigator.clipboard.writeText(val).then(() => showToast('Sandi disalin!'));
+              };
+              genPass();
+            }, 50);
+            break;
+
+          case 'qrgen':
+            openModal('Generator QR', `
+              <div class="input-group">
+                <label>Teks / URL</label>
+                <input type="text" id="qrInput" placeholder="https://contoh.com">
+              </div>
+              <button class="btn-primary" id="qrBtn">Buat QR Code</button>
+              <div id="qrResult" style="text-align:center; margin-top:1.5rem;"></div>
+            `);
+            setTimeout(() => {
+              document.getElementById('qrBtn').onclick = () => {
+                const val = document.getElementById('qrInput').value.trim();
+                if (!val) return showToast('Isi teks dulu!');
+                const url = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(val)}`;
+                document.getElementById('qrResult').innerHTML = `<img src="${url}" alt="QR" style="border-radius:12px; background:white; padding:10px;">`;
+              };
+            }, 50);
+            break;
+
+          case 'hashtag':
+            openModal('Bersihkan Teks', `
+              <div class="input-group">
+                <label>Teks Kotor</label>
+                <textarea id="cleanInput" rows="3" placeholder="Contoh:   halo   dunia  !  "></textarea>
+              </div>
+              <button class="btn-primary" id="cleanBtn">Bersihkan Teks</button>
+              <div class="input-group" style="margin-top:1.5rem;">
+                <label>Hasil</label>
+                <input type="text" id="cleanResult" readonly>
+              </div>
+            `);
+            setTimeout(() => {
+              document.getElementById('cleanBtn').onclick = () => {
+                const val = document.getElementById('cleanInput').value;
+                const clean = val.trim().replace(/\s+/g, ' ');
+                document.getElementById('cleanResult').value = clean;
+              };
+            }, 50);
+            break;
+
+          case 'base64':
+            openModal('Base64 Encode/Decode', `
+              <div class="input-group">
+                <label>Teks / Base64</label>
+                <textarea id="b64Input" rows="3"></textarea>
+              </div>
+              <button class="btn-primary" id="encodeBtn">Encode Base64</button>
+              <button class="btn-secondary" id="decodeBtn">Decode Base64</button>
+              <div class="input-group" style="margin-top:1.5rem;">
+                <label>Hasil</label>
+                <textarea id="b64Result" rows="3" readonly></textarea>
+              </div>
+            `);
+            setTimeout(() => {
+              document.getElementById('encodeBtn').onclick = () => {
+                try {
+                  const v = document.getElementById('b64Input').value;
+                  document.getElementById('b64Result').value = btoa(v);
+                } catch(e) { showToast('Gagal encode!'); }
+              };
+              document.getElementById('decodeBtn').onclick = () => {
+                try {
+                  const v = document.getElementById('b64Input').value;
+                  document.getElementById('b64Result').value = atob(v);
+                } catch(e) { showToast('Bukan format Base64 valid!'); }
+              };
+            }, 50);
+            break;
+
+          case 'timer':
+            openModal('Timer Hitung Mundur', `
+              <div class="input-group">
+                <label>Detik (1-3600)</label>
+                <input type="number" id="timeInput" value="60" min="1" max="3600">
+              </div>
+              <div style="font-size:2.5rem; text-align:center; font-weight:800; font-family:monospace; margin:1.5rem 0;" id="timeDisplay">00:00</div>
+              <button class="btn-primary" id="startTimerBtn">Mulai Timer</button>
+              <button class="btn-secondary" id="stopTimerBtn">Stop Timer</button>
+            `);
+            setTimeout(() => {
+              let timerInt = null;
+              let timeLeft = 60;
+              const disp = document.getElementById('timeDisplay');
+              const updateDisplay = () => {
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                disp.textContent = `${m}:${s}`;
+              };
+              document.getElementById('startTimerBtn').onclick = () => {
+                clearInterval(timerInt);
+                timeLeft = parseInt(document.getElementById('timeInput').value) || 60;
+                updateDisplay();
+                timerInt = setInterval(() => {
+                  timeLeft--;
+                  updateDisplay();
+                  if (timeLeft <= 0) {
+                    clearInterval(timerInt);
+                    showToast('Waktu habis!');
+                    disp.textContent = '00:00';
+                  }
+                }, 1000);
+              };
+              document.getElementById('stopTimerBtn').onclick = () => clearInterval(timerInt);
+            }, 50);
+            break;
+
+          case 'notes':
+            const notesKey = 'zession_notes_' + currentUser.toLowerCase();
+            let notesData = JSON.parse(localStorage.getItem(notesKey) || '""');
+            openModal('Catatan Lokal', `
+              <div class="input-group">
+                <label>Catatan Kamu (Tersimpan di Browser)</label>
+                <textarea id="notesInput" rows="6" placeholder="Ketik catatan rahasia di sini...">${esc(notesData)}</textarea>
+              </div>
+              <button class="btn-primary" id="saveNotesBtn">Simpan Catatan</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('saveNotesBtn').onclick = () => {
+                localStorage.setItem(notesKey, JSON.stringify(document.getElementById('notesInput').value));
+                showToast('Catatan disimpan!');
+              };
+            }, 50);
+            break;
+
+          case 'dice':
+            openModal('Lempar Dadu', `
+              <div id="diceDisplay" style="font-size:3rem; text-align:center; margin:2rem 0; font-weight:800; color:var(--accent-light);">-</div>
+              <button class="btn-primary" id="rollBtn">Lempar Dadu</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('rollBtn').onclick = () => {
+                const result = Math.floor(Math.random() * 6) + 1;
+                document.getElementById('diceDisplay').textContent = result;
+              };
+            }, 50);
+            break;
+
+          case 'profil':
+            openModal('Profil Saya', `
+              <div class="data-row"><span class="label">Username Akun</span><span class="value">${esc(currentUser)}</span></div>
+              <div class="data-row"><span class="label">Username Roblox</span><span class="value">${esc(intro.roblox)}</span></div>
+              <div class="data-row"><span class="label">Nama Asli</span><span class="value">${esc(intro.nama)}</span></div>
+              <div class="data-row"><span class="label">Asal Kota</span><span class="value">${esc(intro.kota)}</span></div>
+              <div class="data-row"><span class="label">Game Favorit</span><span class="value">${esc(intro.game)}</span></div>
+              ${isOwner ? `<div class="data-row"><span class="label">Email Owner</span><span class="value">${OWNER_EMAIL}</span></div>` : ''}
+            `);
+            break;
+
+          case 'gantipass':
+            openModal('Ganti Password', `
+              <div class="input-group">
+                <label>Password Lama</label>
+                <input type="password" id="oldPass" placeholder="Masukkan password lama" />
+              </div>
+              <div class="input-group">
+                <label>Password Baru</label>
+                <input type="password" id="newPass" placeholder="Minimal 6 karakter" />
+              </div>
+              <button class="btn-primary" id="savePassBtn">Simpan Password Baru</button>
+              <div class="feedback" id="passFeedback"></div>
+            `);
+            setTimeout(() => {
+              document.getElementById('savePassBtn').onclick = () => {
+                const oldP = document.getElementById('oldPass').value;
+                const newP = document.getElementById('newPass').value;
+                const fb = document.getElementById('passFeedback');
+                fb.textContent = '';
+                
+                // Owner bypass
+                const acc = getAccount() || { password: isOwner ? 'Zar123gg' : '' };
+                
+                if (oldP !== acc.password) { fb.textContent = 'Password lama salah.'; return; }
+                if (newP.length < 6) { fb.textContent = 'Password baru minimal 6 karakter.'; return; }
+                
+                const all = getAccounts();
+                if (!all[currentUser.toLowerCase()]) {
+                  all[currentUser.toLowerCase()] = { username: currentUser, password: newP, createdAt: new Date().toISOString() };
+                } else {
+                  all[currentUser.toLowerCase()].password = newP;
+                }
+                saveAccounts(all);
+                showToast('Password berhasil diubah!');
+                setTimeout(closeModal, 1000);
+              };
+            }, 50);
+            break;
+
+          case 'jsonview':
+            openModal('Data Akun (JSON)', `
+              <div style="background:rgba(0,0,0,0.3); padding:1rem; border-radius:0.8rem; overflow-x:auto; font-family:monospace; font-size:0.8rem;">
+                <pre>${esc(JSON.stringify({ akun: currentUser, isOwner, intro }, null, 2))}</pre>
+              </div>
+            `);
+            break;
+
+          case 'rewards':
+            const today = new Date().toDateString();
+            const rewardKey = 'zession_reward_' + currentUser.toLowerCase();
+            const isClaimed = localStorage.getItem(rewardKey) === today;
+            openModal('Klaim Harian', `
+              <p>Klaim hadiahmu hari ini!</p>
+              <div style="text-align:center; font-size:3rem; margin:1.5rem 0; color:var(--accent-light);">${isClaimed ? '✓' : '?'}</div>
+              <button class="btn-primary" id="claimBtn" ${isClaimed ? 'disabled style="opacity:0.5"' : ''}>${isClaimed ? 'Sudah Diklaim' : 'Klaim Sekarang'}</button>
+            `);
+            if (!isClaimed) {
+              setTimeout(() => {
+                document.getElementById('claimBtn').onclick = () => {
+                  localStorage.setItem(rewardKey, today);
+                  showToast('Hadiah berhasil diklaim!');
+                  closeModal();
+                };
+              }, 50);
+            }
+            break;
+
+          case 'tasks':
+            const taskKey = 'zession_tasks_' + currentUser.toLowerCase();
+            let tasks = JSON.parse(localStorage.getItem(taskKey) || '[]');
+            if (tasks.length === 0) {
+              tasks = [
+                { id: 1, text: 'Buka dashboard', done: true },
+                { id: 2, text: 'Ganti tema', done: false },
+                { id: 3, text: 'Generate sandi', done: false }
+              ];
+            }
+            openModal('Tugas Harian', `<div id="taskList"></div>`);
+            setTimeout(() => {
+              const renderTasks = () => {
+                const list = document.getElementById('taskList');
+                list.innerHTML = tasks.map(t => `
+                  <label style="display:flex; align-items:center; gap:0.8rem; padding:0.8rem 0; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.1);">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} data-id="${t.id}" style="width:18px; height:18px; accent-color:var(--accent);">
+                    <span style="text-decoration:${t.done ? 'line-through' : 'none'}; opacity:${t.done ? 0.6 : 1};">${esc(t.text)}</span>
+                  </label>
+                `).join('');
+                list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                  cb.onchange = (e) => {
+                    const id = parseInt(e.target.dataset.id);
+                    const task = tasks.find(x => x.id === id);
+                    if (task) task.done = e.target.checked;
+                    localStorage.setItem(taskKey, JSON.stringify(tasks));
+                    renderTasks();
+                  };
+                });
+              };
+              renderTasks();
+            }, 50);
+            break;
+
+          case 'privacy':
+            openModal('Privasi Data', `
+              <p>Semua data kamu disimpan secara eksklusif di localStorage browser ini. Tidak ada yang dikirim ke server selain bot owner untuk verifikasi intro.</p>
+              <div class="data-row"><span class="label">Penyimpanan</span><span class="value">Lokal Browser</span></div>
+              <div class="data-row"><span class="label">Tracking</span><span class="value">Nonaktif</span></div>
+              <div class="data-row"><span class="label">Enkripsi</span><span class="value">Ya (Browser)</span></div>
+            `);
+            break;
+
+          case 'theme':
+            openModal('Ganti Tema', `
+              <button class="btn-primary" id="themeBtn">${currentTheme === 'dark' ? 'Ganti ke Terang' : 'Ganti ke Gelap'}</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('themeBtn').onclick = () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                showToast('Tema diubah!');
+                closeModal();
+              };
+            }, 50);
+            break;
+
+          case 'colorpicker':
+            openModal('Warna Acak', `
+              <div id="colorBox" style="width:100%; height:120px; border-radius:1rem; margin-bottom:1rem; background:#3b82f6; display:flex; align-items:center; justify-content:center; font-weight:800; font-family:monospace; font-size:1.2rem; transition:background 0.3s;"></div>
+              <button class="btn-primary" id="genColorBtn">Generate Warna Baru</button>
+            `);
+            setTimeout(() => {
+              const genColor = () => {
+                const hex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                const box = document.getElementById('colorBox');
+                box.style.background = hex;
+                box.textContent = hex.toUpperCase();
+                box.style.color = '#fff';
+                box.style.textShadow = '0 1px 3px rgba(0,0,0,0.8)';
+              };
+              document.getElementById('genColorBtn').onclick = genColor;
+              genColor();
+            }, 50);
+            break;
+
+          case 'urlencode':
+            openModal('URL Encoder', `
+              <div class="input-group">
+                <label>URL / Teks</label>
+                <input type="text" id="urlInput" placeholder="https://contoh.com/?q=halo dunia">
+              </div>
+              <button class="btn-primary" id="encodeUrlBtn">Encode URL</button>
+              <div class="input-group" style="margin-top:1.5rem;">
+                <label>Hasil</label>
+                <textarea id="urlResult" rows="2" readonly></textarea>
+              </div>
+            `);
+            setTimeout(() => {
+              document.getElementById('encodeUrlBtn').onclick = () => {
+                const v = document.getElementById('urlInput').value;
+                document.getElementById('urlResult').value = encodeURIComponent(v);
+              };
+            }, 50);
+            break;
+
+          case 'wordcount':
+            openModal('Hitung Kata & Karakter', `
+              <div class="input-group">
+                <label>Teks Kamu</label>
+                <textarea id="wcInput" rows="4" placeholder="Ketik teks di sini..."></textarea>
+              </div>
+              <div class="data-row"><span class="label">Total Kata</span><span class="value" id="wcWords">0</span></div>
+              <div class="data-row"><span class="label">Total Karakter</span><span class="value" id="wcChars">0</span></div>
+            `);
+            setTimeout(() => {
+              document.getElementById('wcInput').oninput = (e) => {
+                const v = e.target.value;
+                document.getElementById('wcWords').textContent = v.trim() ? v.trim().split(/\s+/).length : 0;
+                document.getElementById('wcChars').textContent = v.length;
+              };
+            }, 50);
+            break;
+
+          case 'stopwatch':
+            openModal('Stopwatch', `
+              <div style="font-size:2.5rem; text-align:center; font-weight:800; font-family:monospace; margin:1.5rem 0;" id="swDisplay">00:00.0</div>
+              <button class="btn-primary" id="swStartBtn">Mulai</button>
+              <button class="btn-secondary" id="swStopBtn">Berhenti / Reset</button>
+            `);
+            setTimeout(() => {
+              let swInt = null;
+              let ms = 0;
+              const disp = document.getElementById('swDisplay');
+              const update = () => {
+                const m = Math.floor(ms / 60000).toString().padStart(2, '0');
+                const s = Math.floor((ms % 60000) / 1000).toString().padStart(2, '0');
+                const d = Math.floor((ms % 1000) / 100);
+                disp.textContent = `${m}:${s}.${d}`;
+              };
+              document.getElementById('swStartBtn').onclick = () => {
+                clearInterval(swInt);
+                swInt = setInterval(() => { ms += 100; update(); }, 100);
+              };
+              document.getElementById('swStopBtn').onclick = () => {
+                clearInterval(swInt);
+                ms = 0;
+                update();
+              };
+            }, 50);
+            break;
+
+          case 'calc':
+            openModal('Kalkulator', `
+              <div class="input-group">
+                <label>Angka 1</label>
+                <input type="number" id="num1" placeholder="0">
+              </div>
+              <div class="input-group">
+                <label>Operator</label>
+                <select id="op">
+                  <option value="+">+ (Tambah)</option>
+                  <option value="-">- (Kurang)</option>
+                  <option value="*">* (Kali)</option>
+                  <option value="/">/ (Bagi)</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Angka 2</label>
+                <input type="number" id="num2" placeholder="0">
+              </div>
+              <button class="btn-primary" id="calcBtn">Hitung Hasil</button>
+              <div class="input-group" style="margin-top:1.5rem;">
+                <label>Hasil</label>
+                <input type="text" id="calcResult" readonly>
+              </div>
+            `);
+            setTimeout(() => {
+              document.getElementById('calcBtn').onclick = () => {
+                const n1 = parseFloat(document.getElementById('num1').value) || 0;
+                const n2 = parseFloat(document.getElementById('num2').value) || 0;
+                const op = document.getElementById('op').value;
+                let res = 0;
+                if (op === '+') res = n1 + n2;
+                if (op === '-') res = n1 - n2;
+                if (op === '*') res = n1 * n2;
+                if (op === '/') res = n2 === 0 ? 'Error: /0' : n1 / n2;
+                document.getElementById('calcResult').value = res;
+              };
+            }, 50);
+            break;
+
+          case 'ipcheck':
+            openModal('Cek IP Publik', `
+              <p>Mendeteksi IP publik kamu saat ini...</p>
+              <div class="input-group" style="margin-top:1rem;">
+                <input type="text" id="ipResult" readonly placeholder="Memuat...">
+              </div>
+              <button class="btn-primary" id="ipBtn">Cek Ulang IP</button>
+            `);
+            const fetchIp = () => {
+              const inp = document.getElementById('ipResult');
+              if (!inp) return;
+              inp.value = 'Memuat...';
+              fetch('https://api.ipify.org?format=json')
+                .then(r => r.json())
+                .then(d => { inp.value = d.ip; })
+                .catch(() => { inp.value = 'Gagal memuat IP'; });
+            };
+            setTimeout(() => {
+              document.getElementById('ipBtn').onclick = fetchIp;
+              fetchIp();
+            }, 50);
+            break;
+
+          case 'charcount':
+            openModal('Hitung Karakter', `
+              <div class="input-group">
+                <label>Teks Kamu</label>
+                <textarea id="ccInput" rows="4" placeholder="Ketik teks di sini..."></textarea>
+              </div>
+              <div class="data-row"><span class="label">Karakter (dengan spasi)</span><span class="value" id="ccWith">0</span></div>
+              <div class="data-row"><span class="label">Karakter (tanpa spasi)</span><span class="value" id="ccWithout">0</span></div>
+            `);
+            setTimeout(() => {
+              document.getElementById('ccInput').oninput = (e) => {
+                const v = e.target.value;
+                document.getElementById('ccWith').textContent = v.length;
+                document.getElementById('ccWithout').textContent = v.replace(/\s/g, '').length;
+              };
+            }, 50);
+            break;
+
+          case 'cleardata':
+            openModal('Hapus Data Sesi', `
+              <p style="color:var(--danger); font-weight:600;">Peringatan: Tindakan ini akan menghapus riwayat aktivitas lokal kamu. Data akun dan intro tetap aman.</p>
+              <button class="btn-primary btn-danger" id="clearBtn">Hapus Riwayat Lokal</button>
+              <button class="btn-secondary" id="cancelClear">Batal</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('clearBtn').onclick = () => {
+                localStorage.removeItem(HISTORY_KEY + currentUser.toLowerCase());
+                showToast('Riwayat lokal berhasil dihapus!');
+                closeModal();
+              };
+              document.getElementById('cancelClear').onclick = closeModal;
+            }, 50);
+            break;
+
+          case 'support':
+            openModal('Beri Rating', `
+              <p>Terima kasih telah menggunakan Zession! Silakan berikan rating untuk mendukung pengembangan.</p>
+              <div style="display:flex; justify-content:center; gap:0.5rem; margin:1.5rem 0; font-size:2rem; color:var(--accent-light);">
+                ${SVG.star}${SVG.star}${SVG.star}${SVG.star}${SVG.star}
+              </div>
+              <button class="btn-primary" id="rateBtn">Kirim Rating 5 Bintang</button>
+              <div class="feedback" id="rateFb"></div>
+            `);
+            setTimeout(() => {
+              document.getElementById('rateBtn').onclick = () => {
+                document.getElementById('rateFb').textContent = 'Terima kasih atas dukungannya!';
+                document.getElementById('rateFb').className = 'feedback success';
+              };
+            }, 50);
+            break;
+        }
+      }
+
+      /* ═══════════ FUNGSI SETTINGS & MENU ═══════════ */
+      function openMenu(id) {
+        switch (id) {
+          case 'settings':
+            openModal('Pengaturan', `
+              <div class="data-row"><span class="label">Tema Tampilan</span><span class="value">${currentTheme === 'dark' ? 'Gelap' : 'Terang'}</span></div>
+              <div class="data-row"><span class="label">Status Akun</span><span class="value" style="color:var(--success)">Aktif</span></div>
+              <div class="data-row"><span class="label">Tipe Akun</span><span class="value" style="color:${isOwner ? 'var(--owner-grad)' : 'var(--text-main)'}; font-weight:800;">${isOwner ? 'OWNER' : 'Member'}</span></div>
+              <h4 style="margin-top:1.5rem;">Aksi Cepat</h4>
+              <button class="btn-primary" id="setThemeBtn">Ganti Tema</button>
+              <button class="btn-secondary" id="dlDataBtn">Download Data Saya (JSON)</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('setThemeBtn').onclick = () => {
+                currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(currentTheme);
+                showToast('Tema diubah!');
+                closeModal();
+              };
+              document.getElementById('dlDataBtn').onclick = () => {
+                const data = { user: currentUser, intro, history: getHistory() };
+                const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `zession-data-${currentUser}.json`;
+                a.click();
+              };
+            }, 50);
+            break;
+
+          case 'about':
+            openModal('Tentang', `
+              <div style="text-align:center; margin-bottom:1.5rem;">
+                <img src="logo.png" style="width:72px; height:72px; border-radius:20px; margin-bottom:0.8rem;">
+                <h4 style="color:var(--text-main); font-size:1.3rem;">Zession</h4>
+                <p style="font-size:0.85rem;">Versi 2.0.0 (Premium)</p>
+              </div>
+              <p>Platform dashboard modern dengan 24 tools bermanfaat untuk menunjang aktivitas harianmu.</p>
+              <div class="data-row"><span class="label">Developer</span><span class="value">Zession Team</span></div>
+              <div class="data-row"><span class="label">Owner</span><span class="value">${OWNER_NAME}</span></div>
+              <div class="data-row"><span class="label">Email</span><span class="value">${OWNER_EMAIL}</span></div>
+            `);
+            break;
+
+          case 'info':
+            openModal('Informasi', `
+              <div class="data-row"><span class="label">Status Sistem</span><span class="value" style="color:var(--success)">Online</span></div>
+              <div class="data-row"><span class="label">Total Tools</span><span class="value">24 Fitur</span></div>
+              <div class="data-row"><span class="label">Total Setting</span><span class="value">6 Menu</span></div>
+              <div class="data-row"><span class="label">Kontak Support</span><span class="value">${OWNER_EMAIL}</span></div>
+              <div class="data-row"><span class="label">Telegram</span><span class="value">@ZessionOwner</span></div>
+            `);
+            break;
+
+          case 'logout':
+            openModal('Keluar Akun', `
+              <p>Yakin ingin keluar dari akun <strong>${esc(currentUser)}</strong>?</p>
+              <button class="btn-primary btn-danger" id="logoutBtn">Ya, Keluar</button>
+              <button class="btn-secondary" id="cancelLogout">Batal</button>
+            `);
+            setTimeout(() => {
+              document.getElementById('logoutBtn').onclick = () => {
+                sessionStorage.removeItem(SESSION_KEY);
+                window.location.href = 'index.html';
+              };
+              document.getElementById('cancelLogout').onclick = closeModal;
+            }, 50);
+            break;
+        }
+      }
+
+      /* ═══════════ INIT ═══════════ */
+      document.getElementById('welcomeName').textContent = currentUser;
+      document.getElementById('sidebarUser').textContent = '@' + currentUser;
+
+    })();
+  </script>
+</body>
+</html>

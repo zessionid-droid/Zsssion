@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Zession — Masuk & Daftar</title>
+  <style>
+    /* ============ RESET ============ */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      min-height: 100vh;
+      width: 100%;
+      overflow-x: hidden;
+      touch-action: pan-y;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      position: relative;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      background-color: #020817;
+    }
+
+    /* ============ BACKGROUND ============ */
+    .bg-image {
+      position: fixed;
+      inset: 0;
+      background: url('background.png') no-repeat center center;
+      background-size: cover;
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 30% 20%, rgba(20, 60, 140, 0.6), rgba(2, 8, 23, 0.92));
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* ============ CARD ============ */
+    .auth-card {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 400px;
+      background: linear-gradient(145deg, rgba(30, 64, 175, 0.28), rgba(15, 23, 42, 0.42));
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      border-radius: 1.8rem;
+      padding: 2rem 1.8rem 2.2rem;
+      box-shadow:
+        0 25px 50px -20px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(96, 165, 250, 0.08) inset,
+        0 1px 0 rgba(147, 197, 253, 0.25) inset;
+      animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+      outline: none;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .auth-card.exiting {
+      animation: cardOut 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes cardOut {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-18px) scale(0.94); }
+    }
+
+    /* ============ BRAND ============ */
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .brand-logo-wrap {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      padding: 2.5px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #38bdf8 100%);
+      box-shadow:
+        0 0 0 1px rgba(96, 165, 250, 0.25),
+        0 8px 20px -8px rgba(59, 130, 246, 0.7),
+        0 0 24px -6px rgba(56, 189, 248, 0.5);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .brand-logo {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 15.5px;
+      overflow: hidden;
+      background: #0b1220;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      -webkit-user-drag: none;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .brand-name {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #ffffff;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(96, 165, 250, 0.45);
+    }
+
+    .brand-name span {
+      background: linear-gradient(135deg, #60a5fa, #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ============ TAB ============ */
+    .tabs {
+      display: flex;
+      gap: 0.35rem;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 0.35rem;
+      border-radius: 2.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      border: none;
+      background: transparent;
+      color: rgba(191, 219, 254, 0.6);
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 2rem;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 1;
+      transition: color 0.25s ease;
+      outline: none;
+      user-select: none;
+    }
+
+    .tab-btn.active { color: #0b1220; }
+
+    .tab-indicator {
+      position: absolute;
+      top: 0.35rem;
+      left: 0.35rem;
+      height: calc(100% - 0.7rem);
+      width: calc(50% - 0.35rem);
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      border-radius: 2rem;
+      box-shadow: 0 6px 18px -6px rgba(59, 130, 246, 0.8);
+      transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .tabs[data-active="register"] .tab-indicator {
+      transform: translateX(100%);
+    }
+
+    /* ============ PANEL ============ */
+    .form-panel { display: none; }
+    .form-panel.active {
+      display: block;
+      animation: panelIn 0.35s ease;
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      color: #f0f9ff;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.3px;
+    }
+
+    h2 span {
+      font-weight: 400;
+      color: rgba(191, 219, 254, 0.7);
+      font-size: 0.8rem;
+      display: block;
+      margin-top: 0.25rem;
+    }
+
+    /* ============ INPUT ============ */
+    .input-group { margin-bottom: 1.1rem; }
+
+    .input-group label {
+      display: block;
+      color: rgba(219, 234, 254, 0.9);
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 0.88rem 3rem 0.88rem 2.85rem;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1.5px solid rgba(96, 165, 250, 0.25);
+      border-radius: 0.9rem;
+      font-size: 0.95rem;
+      color: #f0f9ff;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+
+    .input-wrapper input:focus {
+      border-color: #60a5fa;
+      background: rgba(15, 23, 42, 0.78);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    }
+
+    .input-wrapper input.input-error {
+      border-color: #fca5a5;
+      box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.15);
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(147, 197, 253, 0.75);
+      pointer-events: none;
+      transition: color 0.2s ease;
+    }
+
+    .input-wrapper input:focus ~ .input-icon { color: #60a5fa; }
+    .input-wrapper input.input-error ~ .input-icon { color: #fca5a5; }
+
+    .input-icon svg {
+      width: 19px;
+      height: 19px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 0.55rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: rgba(147, 197, 253, 0.7);
+      padding: 0.4rem;
+      display: flex;
+      align-items: center;
+      border-radius: 50%;
+    }
+
+    .toggle-password svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    /* ============ HINT & TOMBOL ============ */
+    .hint {
+      font-size: 0.73rem;
+      color: rgba(148, 163, 184, 0.75);
+      margin-top: 0.4rem;
+      padding-left: 0.2rem;
+      transition: color 0.2s ease;
+      min-height: 0.95rem;
+    }
+
+    .hint.error { color: #fca5a5; }
+    .hint.success { color: #86efac; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 0.95rem;
+      margin-top: 0.6rem;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 0.9rem;
+      font-size: 0.98rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      transition: filter 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-submit:hover { filter: brightness(1.1); }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit.loading { pointer-events: none; opacity: 0.9; }
+
+    .btn-submit svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+    }
+
+    .footer-text {
+      text-align: center;
+      color: rgba(191, 219, 254, 0.65);
+      font-size: 0.85rem;
+      margin-top: 1.4rem;
+    }
+
+    .footer-text a {
+      color: #60a5fa;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .feedback {
+      font-size: 0.82rem;
+      margin-top: 0.9rem;
+      text-align: center;
+      color: #fca5a5;
+      font-weight: 600;
+      min-height: 1rem;
+      transition: color 0.2s ease;
+    }
+
+    .feedback.success { color: #86efac; }
+
+    /* ============ TRANSITION SCREEN ============ */
+    .transition-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.1rem;
+      background: radial-gradient(circle at 50% 40%, rgba(20, 60, 140, 0.85), rgba(2, 8, 23, 0.97));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .transition-screen.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .ts-logo {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      padding: 3px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #60a5fa, #3b82f6, #38bdf8);
+      box-shadow:
+        0 0 0 1px rgba(96, 165, 250, 0.35),
+        0 12px 30px -6px rgba(59, 130, 246, 0.85),
+        0 0 44px -6px rgba(56, 189, 248, 0.7);
+      overflow: hidden;
+      isolation: isolate;
+      animation: tsLogoIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes tsLogoIn {
+      from { opacity: 0; transform: scale(0.5) rotate(-8deg); }
+      to   { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .ts-logo::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 26px;
+      border: 2px solid rgba(96, 165, 250, 0.5);
+      animation: tsPulse 1.6s ease-out infinite;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes tsPulse {
+      0%   { transform: scale(1);   opacity: 0.8; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .ts-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 19px;
+      display: block;
+    }
+
+    .ts-spinner {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 3px solid rgba(96, 165, 250, 0.22);
+      border-top-color: #60a5fa;
+      animation: tsSpin 0.8s linear infinite;
+    }
+
+    @keyframes tsSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    .ts-text {
+      color: rgba(219, 234, 254, 0.9);
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      animation: tsTextIn 0.6s ease 0.2s both;
+    }
+
+    @keyframes tsTextIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ts-text strong {
+      color: #93c5fd;
+      font-weight: 700;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="bg-image"></div>
+  <div class="bg-overlay"></div>
+
+  <div class="auth-card" id="authCard">
+    <!-- Brand -->
+    <div class="brand">
+      <div class="brand-logo-wrap">
+        <div class="brand-logo">
+          <img src="logo.png" alt="Zession Logo" draggable="false" />
+        </div>
+      </div>
+      <div class="brand-name">Zes<span>sion</span></div>
+    </div>
+
+    <!-- Tab -->
+    <div class="tabs" id="tabs" data-active="login">
+      <div class="tab-indicator"></div>
+      <button type="button" class="tab-btn active" data-tab="login">Masuk</button>
+      <button type="button" class="tab-btn" data-tab="register">Daftar</button>
+    </div>
+
+    <!-- ========== LOGIN ========== -->
+    <div class="form-panel active" id="panel-login">
+      <h2>Selamat Datang Kembali <span>Masuk untuk melanjutkan petualangan Anda</span></h2>
+
+      <form id="loginForm" novalidate autocomplete="off">
+        <div class="input-group">
+          <label for="loginUsername">Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+            </span>
+            <input type="text" id="loginUsername" placeholder="Masukkan username" spellcheck="false" />
+          </div>
+          <div class="hint" id="loginUsernameHint">Minimal 3 karakter</div>
+        </div>
+
+        <div class="input-group">
+          <label for="loginPassword">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><path d="M12 16.5v2"/></svg>
+            </span>
+            <input type="password" id="loginPassword" placeholder="Masukkan password" />
+            <button type="button" class="toggle-password" data-target="loginPassword">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            </button>
+          </div>
+          <div class="hint" id="loginPasswordHint">Minimal 6 karakter</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="loginBtn">
+          <span class="btn-label">Masuk</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="feedback" id="loginFeedback"></div>
+      </form>
+
+      <p class="footer-text">Belum punya akun? <a href="#" data-switch="register">Daftar sekarang</a></p>
+    </div>
+
+    <!-- ========== DAFTAR ========== -->
+    <div class="form-panel" id="panel-register">
+      <h2>Buat Akun Zession <span>Bergabung dan mulai perjalanan Anda</span></h2>
+
+      <form id="registerForm" novalidate autocomplete="off">
+        <div class="input-group">
+          <label for="regUsername">Username</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg>
+            </span>
+            <input type="text" id="regUsername" placeholder="Pilih username" spellcheck="false" />
+          </div>
+          <div class="hint" id="regUsernameHint">Minimal 3 karakter</div>
+        </div>
+
+        <div class="input-group">
+          <label for="regPassword">Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/><path d="M12 16.5v2"/></svg>
+            </span>
+            <input type="password" id="regPassword" placeholder="Buat password" />
+            <button type="button" class="toggle-password" data-target="regPassword">
+              <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>
+            </button>
+          </div>
+          <div class="hint" id="regPasswordHint">Minimal 6 karakter</div>
+        </div>
+
+        <button type="submit" class="btn-submit" id="registerBtn">
+          <span class="btn-label">Daftar</span>
+          <svg viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+        </button>
+        <div class="feedback" id="registerFeedback"></div>
+      </form>
+
+      <p class="footer-text">Sudah punya akun? <a href="#" data-switch="login">Masuk di sini</a></p>
+    </div>
+  </div>
+
+  <!-- ============ TRANSITION SCREEN ============ -->
+  <div class="transition-screen" id="transitionScreen">
+    <div class="ts-logo">
+      <img src="logo.png" alt="Zession" />
+    </div>
+    <div class="ts-spinner"></div>
+    <p class="ts-text">Mengarahkan ke dashboard<strong id="tsUser"></strong>...</p>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* ============ STORAGE ============ */
+      const STORAGE_KEY = 'zession_accounts';
+      const SESSION_KEY = 'zession_current_user';
+
+      const getAccounts = () => {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+        catch (_) { return {}; }
+      };
+      const saveAccounts = (a) => {
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(a)); } catch (_) {}
+      };
+      const findAccount = (username) => getAccounts()[username.trim().toLowerCase()] || null;
+      const accountExists = (u) => findAccount(u) !== null;
+      const createAccount = (username, password) => {
+        const accounts = getAccounts();
+        accounts[username.trim().toLowerCase()] = {
+          username: username.trim(),
+          password,
+          createdAt: new Date().toISOString()
+        };
+        saveAccounts(accounts);
+      };
+      const setCurrentUser = (u) => {
+        try { sessionStorage.setItem(SESSION_KEY, u.trim()); } catch (_) {}
+      };
+
+      /* ============ ELEMENT REFS ============ */
+      const card = document.getElementById('authCard');
+      const tsScreen = document.getElementById('transitionScreen');
+      const tsUser = document.getElementById('tsUser');
+
+      /* ============ TABS ============ */
+      const tabsContainer = document.getElementById('tabs');
+      const tabs = tabsContainer.querySelectorAll('.tab-btn');
+      const panels = {
+        login: document.getElementById('panel-login'),
+        register: document.getElementById('panel-register')
+      };
+
+      const clearFeedback = (id) => {
+        const el = document.getElementById(id);
+        if (el) { el.textContent = ''; el.className = 'feedback'; }
+      };
+
+      function switchTab(name) {
+        tabsContainer.dataset.active = name;
+        tabs.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        Object.keys(panels).forEach(k => panels[k].classList.toggle('active', k === name));
+        clearFeedback('loginFeedback');
+        clearFeedback('registerFeedback');
+      }
+
+      tabs.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+      document.querySelectorAll('[data-switch]').forEach(a => {
+        a.addEventListener('click', (e) => { e.preventDefault(); switchTab(a.dataset.switch); });
+      });
+
+      /* ============ TOGGLE PASSWORD ============ */
+      const eyeOpen = `<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>`;
+      const eyeClosed = `<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><line x1="3" y1="3" x2="21" y2="21"/></svg>`;
+
+      document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function () {
+          const input = document.getElementById(this.dataset.target);
+          if (!input) return;
+          const isPwd = input.type === 'password';
+          input.type = isPwd ? 'text' : 'password';
+          this.innerHTML = isPwd ? eyeOpen : eyeClosed;
+        });
+      });
+
+      /* ============ VALIDASI ============ */
+      const setHint = (id, msg, type = '') => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'hint' + (type ? ' ' + type : '');
+      };
+      const setFeedback = (id, msg, success = false) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg;
+        el.className = 'feedback' + (success ? ' success' : '');
+      };
+
+      const validateUsername = (v) => {
+        const val = v.trim();
+        if (!val) return { valid: false, message: 'Username tidak boleh kosong' };
+        if (val.length < 3) return { valid: false, message: 'Username minimal 3 karakter' };
+        return { valid: true, message: '✓ Username valid' };
+      };
+      const validatePassword = (v) => {
+        if (!v) return { valid: false, message: 'Password tidak boleh kosong' };
+        if (v.length < 6) return { valid: false, message: 'Password minimal 6 karakter' };
+        return { valid: true, message: '✓ Password valid' };
+      };
+
+      const bindHint = (inputId, hintId, validator) => {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('input', function () {
+          input.classList.remove('input-error');
+          const res = validator(this.value);
+          setHint(hintId, res.message, res.valid ? 'success' : this.value.length > 0 ? 'error' : '');
+        });
+      };
+
+      bindHint('loginUsername', 'loginUsernameHint', validateUsername);
+      bindHint('loginPassword', 'loginPasswordHint', validatePassword);
+      bindHint('regUsername', 'regUsernameHint', validateUsername);
+      bindHint('regPassword', 'regPasswordHint', validatePassword);
+
+      /* ============ ANIMASI TRANSISI ============ */
+      const animateExitToDashboard = (username) => {
+        setCurrentUser(username);
+        tsUser.textContent = ' sebagai ' + username;
+        card.classList.add('exiting');
+        setTimeout(() => tsScreen.classList.add('show'), 150);
+        setTimeout(() => { window.location.href = 'intro.html'; }, 1100);
+      };
+
+      /* ============ LOGIN ============ */
+      document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearFeedback('loginFeedback');
+
+        const uInput = document.getElementById('loginUsername');
+        const pInput = document.getElementById('loginPassword');
+        const username = uInput.value.trim();
+        const password = pInput.value;
+
+        // Reset error state
+        uInput.classList.remove('input-error');
+        pInput.classList.remove('input-error');
+
+        // Validasi format username
+        const uRes = validateUsername(username);
+        if (!uRes.valid) {
+          setFeedback('loginFeedback', uRes.message);
+          setHint('loginUsernameHint', uRes.message, 'error');
+          uInput.classList.add('input-error');
+          uInput.focus();
+          return;
+        }
+
+        // Validasi format password
+        const pRes = validatePassword(password);
+        if (!pRes.valid) {
+          setFeedback('loginFeedback', pRes.message);
+          setHint('loginPasswordHint', pRes.message, 'error');
+          pInput.classList.add('input-error');
+          pInput.focus();
+          return;
+        }
+
+        // ===== CEK AKUN TERDAFTAR =====
+        const account = findAccount(username);
+        if (!account) {
+          const msg = 'Akun tidak ditemukan. Silakan daftar terlebih dahulu.';
+          setFeedback('loginFeedback', msg);
+          // ← TAMPILKAN ERROR DI BAWAH USERNAME DAN PASSWORD
+          setHint('loginUsernameHint', msg, 'error');
+          setHint('loginPasswordHint', msg, 'error');
+          uInput.classList.add('input-error');
+          pInput.classList.add('input-error');
+          uInput.focus();
+          return;
+        }
+
+        // ===== CEK PASSWORD COCOK =====
+        if (account.password !== password) {
+          const msg = 'Password salah. Silakan coba lagi.';
+          setFeedback('loginFeedback', msg);
+          // ← TAMPILKAN ERROR DI BAWAH PASSWORD
+          setHint('loginPasswordHint', msg, 'error');
+          pInput.classList.add('input-error');
+          pInput.focus();
+          return;
+        }
+
+        // ✅ Login berhasil
+        const btn = document.getElementById('loginBtn');
+        btn.classList.add('loading');
+        btn.querySelector('.btn-label').textContent = 'Memproses...';
+        setFeedback('loginFeedback', '✓ Login berhasil!', true);
+        animateExitToDashboard(account.username);
+      });
+
+      /* ============ DAFTAR ============ */
+      document.getElementById('registerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        clearFeedback('registerFeedback');
+
+        const uInput = document.getElementById('regUsername');
+        const pInput = document.getElementById('regPassword');
+        const username = uInput.value.trim();
+        const password = pInput.value;
+
+        uInput.classList.remove('input-error');
+        pInput.classList.remove('input-error');
+
+        const uRes = validateUsername(username);
+        if (!uRes.valid) {
+          setFeedback('registerFeedback', uRes.message);
+          setHint('regUsernameHint', uRes.message, 'error');
+          uInput.classList.add('input-error');
+          uInput.focus();
+          return;
+        }
+        const pRes = validatePassword(password);
+        if (!pRes.valid) {
+          setFeedback('registerFeedback', pRes.message);
+          setHint('regPasswordHint', pRes.message, 'error');
+          pInput.classList.add('input-error');
+          pInput.focus();
+          return;
+        }
+        if (accountExists(username)) {
+          setFeedback('registerFeedback', 'Username sudah digunakan. Pilih username lain.');
+          setHint('regUsernameHint', 'Username sudah terdaftar', 'error');
+          uInput.classList.add('input-error');
+          uInput.focus();
+          return;
+        }
+
+        createAccount(username, password);
+
+        const btn = document.getElementById('registerBtn');
+        btn.classList.add('loading');
+        btn.querySelector('.btn-label').textContent = 'Mendaftarkan...';
+        setFeedback('registerFeedback', '✓ Pendaftaran berhasil!', true);
+        animateExitToDashboard(username);
+      });
+
+    })();
+  </script>
+</body>
+</html>
